@@ -4,6 +4,8 @@ import scipy.spatial.distance
 import numpy as np
 import time
 
+np.set_printoptions(suppress=True)
+
 # Needs improvement
 # -numpy is converting ints to floats, not sure if it slows it down
 
@@ -18,6 +20,13 @@ def read_coordinates(inputFile):
         rowList = [round(float(item)) for item in rowList]
         npArray = np.array([rowList[1], rowList[2]])
         nodeCoordMapping[rowList[0]] = npArray
+    return nodeCoordMapping
+
+def numpy_import(inputFile):
+    nodeCoordMapping = {}
+    npImport = np.loadtxt(inputFile, delimiter=' ', dtype=float)
+    for array in npImport:
+        nodeCoordMapping[array[0]] = np.rint(array[1:]).astype(int)
     return nodeCoordMapping
 
 def create_graph(inputDict):
@@ -69,7 +78,6 @@ def main(argv):
     timeLimit = argv[2]
 
     start = start = time.time()
-
     # creates initail mapping from data
     nodeCoordMapping = read_coordinates(inputFile)
 
@@ -78,6 +86,20 @@ def main(argv):
 
     end = time.time()
     print(end - start)
+
+    start = start = time.time()
+
+    nodeCoordMapping = numpy_import(inputFile)
+
+    graph1 = create_graph(nodeCoordMapping)
+
+    end = time.time()
+    print(end - start)
+
+
+    print(graph == graph1)
+    # npImport = np.loadtxt(inputFile, delimiter=' ', dtype=float)
+    # print(npImport)
 
 
 if __name__ == "__main__":
