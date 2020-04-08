@@ -2,6 +2,7 @@ import sys
 from pprint import pprint
 import scipy.spatial.distance
 import numpy as np
+import time
 
 # Needs improvement
 # -numpy is converting ints to floats, not sure if it slows it down
@@ -67,12 +68,16 @@ def main(argv):
     outputFile = argv[1]
     timeLimit = argv[2]
 
+    start = start = time.time()
+
     # creates initail mapping from data
     nodeCoordMapping = read_coordinates(inputFile)
 
     # creates graph
     graph = create_graph(nodeCoordMapping)
 
+    end = time.time()
+    print(end - start)
 
 
 if __name__ == "__main__":
