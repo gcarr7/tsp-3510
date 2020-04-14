@@ -89,7 +89,7 @@ def main(argv):
     outputFile = argv[1]
     timeLimit = argv[2]
 
-    start = start = time.time()
+    start = time.time()
     # creates initail mapping from data
     nodeCoordMapping = read_coordinates(inputFile)
 
@@ -99,40 +99,26 @@ def main(argv):
     end = time.time()
     print(end - start)
 
-    start = start = time.time()
-
-    nodeCoordMapping = numpy_import(inputFile)
-
-    graph1 = create_graph(nodeCoordMapping)
-
-    end = time.time()
-    print(end - start)
-
-
-    print(graph == graph1)
-    # npImport = np.loadtxt(inputFile, delimiter=' ', dtype=float)
-    # print(npImport)
-
-    #Dynamic Programing
+    #Dynamic Programing.
 
     s = [1]      #add to this list as we add in nodes (always start at 1)
-    cost = {}  # matrix to track min const using dynamic proraming 
-    all_nodes = graph1.keys()
+    cost = {}  # matrix to track min const using dynamic proraming
+    all_nodes = graph.keys()
 
     set_mem = []
     for k in range(2, len(all_nodes)+1):
-        sets = getSets(k, graph1, set_mem)
+        sets = getSets(k, graph, set_mem)
         set_mem = sets[1]
         for T in sets[0]:
             for i in (all_nodes - T):
                if (len(T) == 2):
-                    cost[tuple(T),i] = graph1[1][i]
+                    cost[tuple(T),i] = graph[1][i]
                if (len(T) > 2):
                     cost[T,i] = float("inf")
                     #min_tracker = 0
                     for j in (T-[1, i]) :
-                         if ((cost[T-{i},j] + graph1[j][i]) < cost[T,i]):
-                              cost[T,i] = cost[T-{i},j] + graph1[j][i]
+                         if ((cost[T-{i},j] + graph[j][i]) < cost[T,i]):
+                              cost[T,i] = cost[T-{i},j] + graph[j][i]
                               min_tracker = j
                     #s += [min_tracker]
             #s.remove(i)
