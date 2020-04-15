@@ -75,12 +75,11 @@ class Colony():
         self.antList = []
         for num in range(self.ants):
             currentAnt = Ant(self, self.graph)
-
             for num in range(self.graph.size - 1):
                 currentAnt.create_eta()
                 currentAnt.get_next()
-            currentAnt.total_cost += self.graph.matrix[currentAnt.visitedNodes[-1]][currentAnt.visitedNodes[0]]
-
+            currentAnt.total_cost += self.graph.matrix[currentAnt.visitedIndices[-1]][currentAnt.visitedIndices[0]]
+            currentAnt.visitedNodes.append(currentAnt.visitedNodes[0])
             self.antList.append(currentAnt)
 
 
@@ -108,9 +107,11 @@ class Ant():
         self.eta = None
         self.total_cost = 0.0
         self.start = random.randint(0, graph.size - 1)
-        self.visitedNodes = [self.start]
-        self.unvisitedNodes = [index for index in range(self.graph.size)]
-        self.unvisitedNodes.remove(self.start)
+        self.visitedIndices = [self.start]
+        # add one to get actual node id
+        self.visitedNodes = [self.start + 1]
+        self.unvisitedIndices = [index for index in range(self.graph.size)]
+        self.unvisitedIndices.remove(self.start)
         self.current = self.start
 
     def create_eta(self):
@@ -122,12 +123,12 @@ class Ant():
 
     def get_next(self):
         den = 0
-        for node in self.unvisitedNodes:
+        for node in self.unvisitedIndices:
             den += self.graph.pheromone_matrix[self.current][node] ** self.colony.alpha * self.eta[self.current][node] ** self.colony.beta
         probabilities = np.zeros(self.graph.size)
 
         for index in range(self.graph.size):
-            if index in self.unvisitedNodes:
+            if index in self.unvisitedIndices:
                 probabilities[index] = self.graph.pheromone_matrix[self.current][index] ** self.colony.alpha * \
                                     self.eta[self.current][index] ** self.colony.beta / den
         selected = 0
@@ -139,21 +140,46 @@ class Ant():
                 selected = index
                 break
 
-        self.unvisitedNodes.remove(selected)
-        self.visitedNodes.append(selected)
+        self.unvisitedIndices.remove(selected)
+        self.visitedIndices.append(selected)
+
+        # add one to get actual node id
+        self.visitedNodes.append(selected + 1)
         self.total_cost += self.graph.matrix[self.current][selected]
         self.current = selected
 
     def delta_update(self):
-        for index in range(1, len(self.visitedNodes)):
-            row = self.visitedNodes[index - 1]
-            col = self.visitedNodes[index]
+        for index in range(1, len(self.visitedIndices)):
+            row = self.visitedIndices[index - 1]
+            col = self.visitedIndices[index]
             if self.colony.strategy == 1:
                 self.pheromone_delta[row][col] = self.colony.q
             elif self.colony.strategy == 2:
                 self.pheromone_delta[row][col] = self.colony.q / self.graph.matrix[i][j]
             else:
                 self.pheromone_delta[row][col] = self.colony.q / self.total_cost
+
+def create_graph(inputDict):
+    graph = {}
+    nodes = list(inputDict.keys())
+
+    # creates dictionary to be copied for each node to map
+    # distance to given node
+    initInvDict = {node:None for node in nodes}
+
+    for node in nodes:
+        graph[node] = initInvDict.copy()
+
+        # deleting the node in its mapping because dist will be zero
+        del graph[node][node]
+        nodeCoord = inputDict[node]
+        for key in graph[node].keys():
+            if key != node:
+                compareNode = inputDict[key]
+                npArray = np.array([nodeCoord, compareNode])
+                distance = scipy.spatial.distance.euclidean(nodeCoord, compareNode)
+                graph[node][key] = distance
+    return graph
 
 
 
@@ -165,35 +191,41 @@ def main(argv):
     # timeLimit = argv[2]
 
 
-    # costList = list()
-    # for num in range(10):
-    #     print("Run: " + str(num))
-    #     graph = Graph(inputFile)
+    costList = list()
+    for num in range(10):
+        print("Run: " + str(num))
+        graph = Graph(inputFile)
 
-    #     graph.read_coordinates()
-    #     graph.create_cost_matrix()
-    #     graph.create_pheromone_matrix()
+        graph.read_coordinates()
+        graph.create_cost_matrix()
+        graph.create_pheromone_matrix()
 
-    #     colony = Colony(graph, 40, 400, .5, 10.0, .3, 10, 1)
-    #     path, cost = colony.opt_path_finder()
-    #     costList.append(cost)
+        colony = Colony(graph, 20, 200, .5, 10.0, .3, 10, 1)
+        path, cost = colony.opt_path_finder()
+        costList.append(cost)
 
-    # print(costList)
-    # print(mean(costList))
-
-    graph = Graph(inputFile)
-
-    graph.read_coordinates()
-    graph.create_cost_matrix()
-    graph.create_pheromone_matrix()
-
-    colony = Colony(graph, 2, 2, .5, 10.0, .3, 10, 1)
-    path, cost = colony.opt_path_finder()
+    print(costList)
+    print(mean(costList))
 
 
+    # graph = Graph(inputFile)
+
+    # graph.read_coordinates()
+    # graph.create_cost_matrix()
+    # graph.create_pheromone_matrix()
+
+    # colony = Colony(graph, 2, 2, .5, 10.0, .3, 10, 1)
     # path, cost = colony.opt_path_finder()
-    print(path)
-    print(cost)
+
+    # dictmap = create_graph(graph.nodeMapping)
+
+    # # path, cost = colony.opt_path_finder()
+    # print(path)
+
+    # print(len(path))
+    # print(len(set(path)))
+
+    # print(cost)
 
 
 if __name__ == "__main__":

@@ -92,13 +92,14 @@ def main(argv):
     start = time.time()
     # creates initail mapping from data
     nodeCoordMapping = read_coordinates(inputFile)
+    pprint(nodeCoordMapping)
 
     # creates graph
     graph = create_graph(nodeCoordMapping)
-    pprint(graph)
+    # pprint(graph)
 
     end = time.time()
-    print(end - start)
+    # print(end - start)
 
     #Dynamic Programing.
 
@@ -124,8 +125,8 @@ def main(argv):
                     #s += [min_tracker]
             #s.remove(i)
 
-    print(cost)
-    print(s)
+    # print(cost)
+    # print(s)
 
 
 
