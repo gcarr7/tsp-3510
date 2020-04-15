@@ -95,6 +95,7 @@ def main(argv):
 
     # creates graph
     graph = create_graph(nodeCoordMapping)
+    pprint(graph)
 
     end = time.time()
     print(end - start)
