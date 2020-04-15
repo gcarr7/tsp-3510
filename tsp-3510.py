@@ -51,6 +51,18 @@ def create_graph(inputDict):
                 graph[node][key] = distance
     return graph
 
+def getSets(size, nodes, set_mem):
+    current_sets = []
+    if size==2 or set_mem==[]:
+        set_mem = [{1.0,x} for x in nodes.keys()]
+        set_mem.remove({1.0})
+    else:
+        for j in current_sets:
+          print(j)
+          for i in range(2, len(nodes.keys())):
+               set_mem.append(j.add(i))
+               current_sets.append(j.add(i))
+    return [current_sets, set_mem]
 
 
 def main(argv):
@@ -77,29 +89,45 @@ def main(argv):
     outputFile = argv[1]
     timeLimit = argv[2]
 
-    start = start = time.time()
+    start = time.time()
     # creates initail mapping from data
     nodeCoordMapping = read_coordinates(inputFile)
+    pprint(nodeCoordMapping)
 
     # creates graph
     graph = create_graph(nodeCoordMapping)
+    # pprint(graph)
 
     end = time.time()
-    print(end - start)
+    # print(end - start)
 
-    start = start = time.time()
+    #Dynamic Programing.
 
-    nodeCoordMapping = numpy_import(inputFile)
+    s = [1]      #add to this list as we add in nodes (always start at 1)
+    cost = {}  # matrix to track min const using dynamic proraming
+    all_nodes = graph.keys()
 
-    graph1 = create_graph(nodeCoordMapping)
+    set_mem = []
+    for k in range(2, len(all_nodes)+1):
+        sets = getSets(k, graph, set_mem)
+        set_mem = sets[1]
+        for T in sets[0]:
+            for i in (all_nodes - T):
+               if (len(T) == 2):
+                    cost[tuple(T),i] = graph[1][i]
+               if (len(T) > 2):
+                    cost[T,i] = float("inf")
+                    #min_tracker = 0
+                    for j in (T-[1, i]) :
+                         if ((cost[T-{i},j] + graph[j][i]) < cost[T,i]):
+                              cost[T,i] = cost[T-{i},j] + graph[j][i]
+                              min_tracker = j
+                    #s += [min_tracker]
+            #s.remove(i)
 
-    end = time.time()
-    print(end - start)
+    # print(cost)
+    # print(s)
 
-
-    print(graph == graph1)
-    # npImport = np.loadtxt(inputFile, delimiter=' ', dtype=float)
-    # print(npImport)
 
 
 if __name__ == "__main__":
